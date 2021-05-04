@@ -1,9 +1,10 @@
-import main, glob, re
+import main, glob, re, datetime
 from konlpy.tag import Okt, Mecab, Hannanum, Kkma, Komoran
 
 # 0) 기초 정보 생성
 basePath = main.projectDirectory
 
+timestampNow = str(datetime.datetime.now().strftime("%Y%m%d%H%M%S"))
 preprocessedPath = basePath + "/data/preprocessed"
 processedPath = basePath + "/data/processed"
 modelPath = basePath + "/data/models"
@@ -116,6 +117,95 @@ def preprocess_morph(targetModel: str, targetTxt: str, outputTxt: str):
             outputData.writelines(tokenized_sent + '\n')
 
 
+def preprocess_pos(targetModel: str, targetTxt: str, outputTxt: str):
+    tokenizer = get_tokenizer(targetModel)
+
+    with open(targetTxt, 'r', encoding='utf-8') as inputData, \
+            open(outputTxt, 'w', encoding='utf-8') as outputData:
+        for line in inputData:
+            sentence = line.replace('\n', '').strip()
+            if targetModel == "okt":
+                tokens = tokenizer.pos(sentence)
+            elif targetModel == "mecab":
+                tokens = tokenizer.pos(sentence)
+            elif targetModel == "hannanum":
+                tokens = tokenizer.pos(sentence)
+            elif targetModel == "kkma":
+                tokens = tokenizer.pos(sentence)
+            elif targetModel == "komoran":
+                tokens = tokenizer.pos(sentence)
+            for items in tokens:
+                outputData.write(' '.join(str(s) for s in items) + '\n')
+
+
+def preprocess_nouns(targetModel: str, targetTxt: str, outputTxt: str):
+    tokenizer = get_tokenizer(targetModel)
+
+    with open(targetTxt, 'r', encoding='utf-8') as inputData, \
+            open(outputTxt, 'w', encoding='utf-8') as outputData:
+        for line in inputData:
+            sentence = line.replace('\n', '').strip()
+            if targetModel == "okt":
+                tokens = tokenizer.nouns(sentence)
+            elif targetModel == "mecab":
+                tokens = tokenizer.nouns(sentence)
+            elif targetModel == "hannanum":
+                tokens = tokenizer.nouns(sentence)
+            elif targetModel == "kkma":
+                tokens = tokenizer.nouns(sentence)
+            elif targetModel == "komoran":
+                tokens = tokenizer.nouns(sentence)
+            for items in tokens:
+                outputData.write(' '.join(str(s) for s in items) + '\n')
+
+def preprocess_phrases(targetModel: str, targetTxt: str, outputTxt: str):
+    tokenizer = get_tokenizer(targetModel)
+
+    with open(targetTxt, 'r', encoding='utf-8') as inputData, \
+            open(outputTxt, 'w', encoding='utf-8') as outputData:
+        for line in inputData:
+            sentence = line.replace('\n', '').strip()
+            if targetModel == "okt":
+                tokens = tokenizer.phrases(sentence)
+            for items in tokens:
+                outputData.write(' '.join(str(s) for s in items) + '\n')
+
+def preprocess_normalize(targetModel: str, targetTxt: str, outputTxt: str):
+    tokenizer = get_tokenizer(targetModel)
+
+    with open(targetTxt, 'r', encoding='utf-8') as inputData, \
+            open(outputTxt, 'w', encoding='utf-8') as outputData:
+        for line in inputData:
+            sentence = line.replace('\n', '').strip()
+            if targetModel == "okt":
+                tokens = tokenizer.normalize(sentence)
+            for items in tokens:
+                outputData.write(' '.join(str(s) for s in items) + '\n')
+
+def preprocess_analyze(targetModel: str, targetTxt: str, outputTxt: str):
+    tokenizer = get_tokenizer(targetModel)
+
+    with open(targetTxt, 'r', encoding='utf-8') as inputData, \
+            open(outputTxt, 'w', encoding='utf-8') as outputData:
+        for line in inputData:
+            sentence = line.replace('\n', '').strip()
+            if targetModel == "hannanum":
+                tokens = tokenizer.analyze(sentence)
+            for items in tokens:
+                outputData.write(' '.join(str(s) for s in items) + '\n')
+
+def preprocess_sentences(targetModel: str, targetTxt: str, outputTxt: str):
+    tokenizer = get_tokenizer(targetModel)
+
+    with open(targetTxt, 'r', encoding='utf-8') as inputData, \
+            open(outputTxt, 'w', encoding='utf-8') as outputData:
+        for line in inputData:
+            sentence = line.replace('\n', '').strip()
+            if targetModel == "kkma":
+                tokens = tokenizer.sentences(sentence)
+            for items in tokens:
+                outputData.write(' '.join(str(s) for s in items) + '\n')
+
 #########################################################
 #########################################################
 
@@ -123,17 +213,9 @@ def preprocess_morph(targetModel: str, targetTxt: str, outputTxt: str):
 ##### 아래부터는 프로세스
 # 모델선택 -> 학습여부 확인, -> 학습할꺼면 학습 아니면 학습안하고 스킵
 # 1) 모델 선택
-targetModel: str = ""
-for elem in modelList:
-    print(str(elem) + ": " + modelList[elem])
-targetIdx: int = int(input("사용할 모델을 선택하세요 :"))
-if targetIdx in modelList:
-    targetModel: str = modelList[targetIdx]
-else:
-    for elem in modelList:
-        print(str(elem) + ": " + modelList[targetIdx])
-    targetIdx: int = int(input("잘못 선택하셨습니다. 사용할 모델을 선택하세요 :"))
-    targetModel: str = modelList[targetIdx]
+requestTxt = "사용할 모델을 선택하세요 :"
+re_requestTxt = "잘못 선택하셨습니다. 사용할 모델을 선택하세요 :"
+targetModel: str = record_userInput(modelList, requestTxt, re_requestTxt)
 
 # 2) 모듈 선택
 targetModule: str = ""
@@ -155,19 +237,20 @@ requestTxt = "전처리를 시행할 말뭉치를 선택하세요 :"
 re_requestTxt = "잘못 선택하셨습니다. 말뭉치를 다시 선택하세요 :"
 targetTxt = record_userInput(inputTxtList, requestTxt, re_requestTxt)
 
-# 3) 전처리 시행'
-outputTxt = processedPath + "/" + targetModel + "_" + targetModule + ".txt"
+# 3) 전처리 시행
+print("")
+outputTxt = processedPath + "/" + targetModel + "_" + targetModule + "_" + timestampNow + ".txt"
 if targetModule == "pos":
-    print("....not yet ready T.T")
+    preprocess_pos(targetModel, targetTxt, outputTxt)
 elif targetModule == "nouns":
-    print("....not yet ready T.T")
+    preprocess_nouns(targetModel, targetTxt, outputTxt)
 elif targetModule == "morphs":
     preprocess_morph(targetModel, targetTxt, outputTxt)
 elif targetModule == "phrases":
-    print("....not yet ready T.T")
+    preprocess_phrases(targetModel, targetTxt, outputTxt)
 elif targetModule == "normalize":
-    print("....not yet ready T.T")
+    preprocess_normalize(targetModel, targetTxt, outputTxt)
 elif targetModule == "analyze":
-    print("....not yet ready T.T")
+    preprocess_analyze(targetModel, targetTxt, outputTxt)
 elif targetModule == "sentences":
-    print("....not yet ready T.T")
+    preprocess_sentences(targetModel, targetTxt, outputTxt)
