@@ -10,8 +10,8 @@ import logging
 
 # 0) 기초 정보 생성
 basePath: str = main.projectDirectory
-rawPath: str = basePath + "/data/raw/ko"
-outputPath: str = basePath + "/data/processed"
+rawPath: str = basePath + "/localdata/raw/ko"
+outputPath: str = basePath + "/localdata/processed"
 
 # 0-1) raw 파일 리스트 생성
 a = glob.glob(rawPath + "/*.*")

@@ -4,8 +4,8 @@ import main, glob
 
 # 0) 기초 정보 생성
 basePath: str = main.projectDirectory
-processedPath: str = basePath + "/data/processed"
-modelPath: str = basePath + "/data/models/embedding/word"
+processedPath: str = basePath + "/localdata/processed"
+modelPath: str = basePath + "/localdata/models/embedding/word"
 
 # 0) 트레이닝셋 리스트
 a = glob.glob(processedPath + "/*.*")

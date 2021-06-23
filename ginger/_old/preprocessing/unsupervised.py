@@ -14,9 +14,9 @@ import soynlp
 
 # 0) 기초 정보 생성
 basePath: str = main.projectDirectory
-rawPath: str = basePath + "/data/raw/ko"
-modelPath: str = basePath + "/data/models/soynlp"
-preprocessPath: str = basePath + "/data/processed"
+rawPath: str = basePath + "/localdata/raw/ko"
+modelPath: str = basePath + "/localdata/models/soynlp"
+preprocessPath: str = basePath + "/localdata/processed"
 
 # 0-1) input 파일 리스트 생성
 a = glob.glob(preprocessPath + "/*.*")

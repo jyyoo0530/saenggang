@@ -5,9 +5,9 @@ from konlpy.tag import Okt, Mecab, Hannanum, Kkma, Komoran
 basePath = main.projectDirectory
 
 timestampNow = str(datetime.datetime.now().strftime("%Y%m%d%H%M%S"))
-preprocessedPath = basePath + "/data/preprocessed"
-processedPath = basePath + "/data/processed"
-modelPath = basePath + "/data/models"
+preprocessedPath = basePath + "/localdata/preprocessed"
+processedPath = basePath + "/localdata/processed"
+modelPath = basePath + "/localdata/models"
 
 # 0-1) input 파일 리스트 생성
 a = glob.glob(preprocessedPath + "/*.*")

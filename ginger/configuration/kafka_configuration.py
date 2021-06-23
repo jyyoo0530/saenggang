@@ -1,0 +1,1 @@
+bootstrapServers = "ginger9.io:9092"
