@@ -1,5 +1,7 @@
 from glob import glob
 from os.path import join
+
+import pandas as pd
 import spacy
 from gensim.parsing.preprocessing import remove_stopwords
 import nltk
@@ -8,20 +10,27 @@ from nltk.stem import PorterStemmer
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 import datetime
+from gensim.models import FastText, word2vec
+from gensim import utils
+from sklearn.manifold import TSNE
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import gensim
+import gensim.models as g
 
 nltk.download('punkt')
 nltk.download('wordnet')
 nltk.download('averaged_perceptron_tagger')
 
 
-def get_file_list(dir_extention):
+def get_file_list(dir_extension):
     dir_base = '/home/jyyoo/PycharmProjects/nlp'
-    path = dir_base + dir_extention
+    path = dir_base + dir_extension
     output = glob(join(path, "**"))
     return output
 
 
-def preprocess(file, separator='.', steps="*"):
+def tokenize_custom(file, separator='.', steps="*"):
     target = open(file).read()
     ##문장 분리
     target = target.replace("<br />", "")
@@ -72,3 +81,43 @@ def preprocess(file, separator='.', steps="*"):
 
     return target
 
+
+def tokenize_tools(file):
+    output = utils.tokenize(file)
+    print(datetime.datetime.now())
+    return output
+
+
+def embedding(corpus, model_type):
+    model = ""
+    if model_type == "fasttext":
+        model = FastText()
+    if model_type == "word2vec":
+        model = word2vec.Word2Vec()
+    model.build_vocab(corpus)
+    model.train(corpus, total_examples=len(corpus), epochs=10)
+    output = "ss"
+    return output
+
+
+def visualization(model):
+
+    ## data 생성부
+    mpl.rcParams['axes.unicode_minus'] = False
+    vocab = list(model.wv.key_to_index)
+    X = model.wv[vocab]
+    tsne = TSNE(n_components=3)
+
+    X_tsne = tsne.fit_transform(X[:100, :])
+    df = pd.DataFrame(X_tsne,index=vocab[:100], columns=['x','y'])
+    df.shape
+    df.head(10)
+    fig = plt.figure()
+    fig.set_size_inches(40, 20)
+    ax = fig.add_subplot(1, 1, 1)
+
+    ax.scatter(df['x'], df['y'])
+
+    for word, pos in df.iterrows():
+        ax.annotate(word, pos, fontsize=30)
+    plt.show()
