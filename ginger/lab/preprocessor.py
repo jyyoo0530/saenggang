@@ -1,3 +1,4 @@
+import math
 from glob import glob
 from os.path import join
 
@@ -17,6 +18,14 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import gensim
 import gensim.models as g
+import torchtext
+from nltk.tokenize import sent_tokenize, word_tokenize
+from torchtext.legacy import data, datasets
+from torchtext.legacy.data import TabularDataset
+from torchtext.legacy.data import Iterator
+from torch.utils.data import DataLoader
+import csv
+from torch import nn
 
 nltk.download('punkt')
 nltk.download('wordnet')
@@ -83,33 +92,30 @@ def tokenize_custom(file, separator='.', steps="*"):
 
 
 def tokenize_tools(file):
-    output = utils.tokenize(file)
+    output = list(utils.tokenize(file))
     print(datetime.datetime.now())
     return output
 
 
 def embedding(corpus, model_type):
-    model = ""
     if model_type == "fasttext":
-        model = FastText()
+        model = FastText(workers=10)
     if model_type == "word2vec":
-        model = word2vec.Word2Vec()
+        model = word2vec.Word2Vec(workers=10)
     model.build_vocab(corpus)
     model.train(corpus, total_examples=len(corpus), epochs=10)
-    output = "ss"
-    return output
+    return model
 
 
 def visualization(model):
-
     ## data 생성부
     mpl.rcParams['axes.unicode_minus'] = False
-    vocab = list(model.wv.key_to_index)
+    vocab = model.wv.index_to_key
     X = model.wv[vocab]
     tsne = TSNE(n_components=3)
 
     X_tsne = tsne.fit_transform(X[:100, :])
-    df = pd.DataFrame(X_tsne,index=vocab[:100], columns=['x','y'])
+    df = pd.DataFrame(X_tsne, index=vocab[:100], columns=['x', 'y'])
     df.shape
     df.head(10)
     fig = plt.figure()
@@ -121,3 +127,39 @@ def visualization(model):
     for word, pos in df.iterrows():
         ax.annotate(word, pos, fontsize=30)
     plt.show()
+
+
+def test(file_list):
+    sentences = list(map(lambda x: list(sent_tokenize(open(x).read())), file_list))
+    train_set = sentences[:math.floor(len(sentences) / 2)]
+    test_set = sentences[math.floor(len(sentences) / 2):]
+    train_data = pd.DataFrame()
+    test_data = pd.DataFrame()
+    for i in train_set:
+        train_data = pd.concat([train_data, pd.DataFrame(i)])
+    for j in test_set:
+        test_data = pd.concat([test_data, pd.DataFrame(j)])
+
+    train_data.to_csv("train_data.csv", index=False)
+    test_data.to_csv("test_data.csv", index=False)
+
+    TEXT = data.Field(sequential=True,
+                      use_vocab=True,
+                      tokenize=word_tokenize,
+                      lower=True,
+                      batch_first=True
+                      )
+    LABEL = data.Field(sequential=False,
+                       use_vocab=False,
+                       batch_first=False,
+                       is_target=True)
+
+    train_data, test_data = TabularDataset.splits(
+        path='.', train='train_data.csv', test='test_data.csv', format='csv',
+        fields=[('text', TEXT), ('label', LABEL)], skip_header=True)
+
+    batch_size = 5
+    train_loader = Iterator(dataset=train_data, batch_size=batch_size)
+    test_loader = Iterator(dataset=test_data, batch_size=batch_size)
+
+nn.Linear
