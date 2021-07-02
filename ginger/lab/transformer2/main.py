@@ -1,29 +1,28 @@
+from torch import nn
 import math
-
 import torch
-import torch.nn as nn
-from bert.tokenization.bert_tokenization import FullTokenizer
 from torch.autograd import Variable
+from torchtext.data import get_tokenizer
+from ginger.lab.transformer2 import transformer
+import itertools
+
+RAW_TEXT = [["I am your father", "je suis ton père"], ["This is my car", "c'est ma voiture"]]
+
+tokenizer = get_tokenizer("spacy", language="en_core_web_sm")
 
 
-class PositionalEncoding(nn.Module):
-    "Implement the PE function."
+INPUT_TEXT = list(map(lambda x: tokenizer(x), list(map(lambda y: y[0], RAW_TEXT))))
+OUTPUT_TEXT = list(map(lambda x: tokenizer(x), list(map(lambda y: y[1], RAW_TEXT))))
 
-    def __init__(self, d_model, dropout, max_len=5000):
-        super(PositionalEncoding, self).__init__()
-        self.dropout = nn.Dropout(p=dropout)
+WORD_CLOUD = set(sum(INPUT_TEXT,[])+sum(OUTPUT_TEXT,[]))
 
-        # Compute the positional encodings once in log space.
-        pe = torch.zeros(max_len, d_model)
-        position = torch.arange(0, max_len).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, d_model, 2) *
-                             -(math.log(10000.0) / d_model))
-        pe[:, 0::2] = torch.sin(position * div_term)
-        pe[:, 1::2] = torch.cos(position * div_term)
-        pe = pe.unsqueeze(0)
-        self.register_buffer('pe', pe)
+vocab = {word: i+2 for i, word in enumerate(WORD_CLOUD)}
+vocab['<unk>'] = 0
+vocab['<pad>'] = 1
 
-    def forward(self, x):
-        x = x + Variable(self.pe[:, :x.size(1)],
-                         requires_grad=False)
-        return self.dropout(x)
+d_model = 100
+dropout = 0.1
+
+embeddings = transformer.Embeddings(d_model, len(vocab))
+pe = transformer.PositionalEncoding(d_model, dropout)
+

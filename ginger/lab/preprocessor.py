@@ -3,29 +3,20 @@ from glob import glob
 from os.path import join
 
 import pandas as pd
-import spacy
 from gensim.parsing.preprocessing import remove_stopwords
 import nltk
-from functools import reduce
 from nltk.stem import PorterStemmer
 from nltk.stem import WordNetLemmatizer
-from nltk.tokenize import word_tokenize
 import datetime
 from gensim.models import FastText, word2vec
 from gensim import utils
 from sklearn.manifold import TSNE
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-import gensim
-import gensim.models as g
-import torchtext
 from nltk.tokenize import sent_tokenize, word_tokenize
 from torchtext.legacy import data, datasets
 from torchtext.legacy.data import TabularDataset
 from torchtext.legacy.data import Iterator
-from torch.utils.data import DataLoader
-import csv
-from torch import nn
 
 nltk.download('punkt')
 nltk.download('wordnet')
@@ -161,5 +152,3 @@ def test(file_list):
     batch_size = 5
     train_loader = Iterator(dataset=train_data, batch_size=batch_size)
     test_loader = Iterator(dataset=test_data, batch_size=batch_size)
-
-nn.Linear
